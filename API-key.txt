@@ -1,5 +1,0 @@
-apikey = "d3fdcff7-84a4-4b5f-b317-3c1564c47404"
-secretkey = "BB020393ACEB0D992064BF0485187F57"
-IP = ""
-Название API-ключа = "Crypto"
-Доступы = "Чтение"
