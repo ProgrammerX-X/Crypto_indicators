@@ -87,22 +87,68 @@
 #         return True  # Ряд коинтегрирован, стационарен
 #     else:
 #         return False  # Ряд не коинтегрирован, не стационарен
-import numpy as np
-import pandas as pd
-from statsmodels.tsa.stattools import adfuller
+# import requests
+# import pandas as pd
+# def getter(coin, days):
+#     if days < 101:
+#         # mark-price
+#         url = f"https://www.okx.com/api/v5/market/history-mark-price-candles?instId={coin}&bar=1D&limit={days}"
+#         data = requests.get(url).json()
+#         df = pd.DataFrame(data['data'], columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+#         df = df[['datetime', 'close', 'high', 'low']]
+#         df['datetime'] = pd.to_datetime(df['datetime'].astype(float), unit='ms')
+#         df['close'] = pd.to_numeric(df['close'], errors="coerce")
+#         df['low'] = pd.to_numeric(df['low'], errors='coerce')
+#         df['high'] = pd.to_numeric(df['high'], errors='coerce')
+#         print(df['datetime'])
+# getter("BTC-USDT", 5)
 
-# Пример данных
-data = [1.5, 2.5, 3.5, 2.0, 4.0, 3.0, 3.5, 4.5, 5.0, 4.5]
-# Преобразуем в Series (можно использовать и массив)
-ts = pd.Series(data)
 
-# Применяем ADF-тест
-result = adfuller(ts)
 
-# Печатаем результат
-print("ADF-статистика:", result[0])
-print("p-значение:", result[1])
-print("Число лагов:", result[2])
-print("Число наблюдений:", result[3])
-print("Критические значения:", result[4])
-print("Соответствующие p-значения для критических значений:", result[5])
+
+
+
+
+
+
+array = [1, 2, 3, 4,9, 10, 11, 12, 5 ,6 ,-1 ,8 , 13, 14 ,15 ,16 ,17, 18]
+depth = 3
+count_d = 0
+check = []
+array_1 = [array[0]]
+count_perc = 0
+dev = 10
+diff_perc_1 = 0
+count_perc_1 = 0
+count_not = 0
+for i in array:
+    count_d+=1
+    check.append(i)
+    if count_d >= depth:
+        max_el = max(check)
+        diff_perc = ((max_el*100)/array_1[count_perc])-100
+        print(f"{max_el}*100/{array_1[count_perc]} = {diff_perc}")
+        if diff_perc < dev:
+            count_not+=1
+        else:
+            print(diff_perc)
+            array_1.append(max_el)
+            count_perc+=1
+            check.clear()
+            count_d = 0
+            continue
+        min_el = min(check)
+        diff_perc_1 = ((min_el*100)/array_1[count_perc])-100
+        print(f"{min_el}*100/{array_1[count_perc]} = {diff_perc_1}")
+        if diff_perc_1 > -dev:
+            count_not+=1
+        else:
+            array_1.append(min_el)
+            count_perc+=1
+            check.clear()
+            count_d = 0
+            continue
+print(array)
+print(array_1)
+# print(array_2)
+        # if diff_perc < 
