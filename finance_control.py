@@ -52,6 +52,7 @@ def getter(coin, days):
             new_dataframe = pd.concat([new_dataframe, df], axis=0)
         return new_dataframe
     return df
+
 # getter('BTC-USDT', 200)
 # df = getter('BTC-USDT', 16)
 # print(df)
@@ -81,7 +82,8 @@ def checking_trend(coin, s_day, b_day):
         return (f"The trend is balanced, time to wait! SMA {s_day} = {smas}, SMA {b_day} = {smab}", smas, smab, diff)
 
 # -------------------------
-
+# checking_trend("BTC-SGD", 7, 25)
+# ['USDT-SGD', 'USDC-SGD', 'BTC-AUD', 'ETH-AUD', 'SOL-AUD', 'XRP-AUD', 'TRUMP-AUD', 'USDT-AUD', 'USDC-AUD', 'BTC-AED', 'ETH-AED', 'SOL-AED', 'XRP-AED', 'TRUMP-AED', 'USDT-AED', 'BTC-BRL', 'ETH-BRL', 'SOL-BRL', 'XRP-BRL', 'PI-BRL', 'TRUMP-BRL', 'PEPE-BRL', 'USDT-BRL', 'USDC-BRL', 'BTC-EUR', 'ETH-EUR', 'SOL-EUR', 'TON-EUR', 'DOGE-EUR', 'XRP-EUR']
 # response = checking_trend("BTC-USD", 7, 25)
 # print(response)
 
@@ -215,19 +217,14 @@ def trend_walk_rolling_ema(coin, days, period_1, period_2):
     ax[0].plot(date, price, color = "blue", label = f"Gibrid EMA")
     ax[0].plot(date_s_, price_s_arr, color = "green", label = f"A signal for a positive trend")
     ax[0].plot(date_b_, price_b_arr, color = "red", label = f"A signal for a negative trend")
-    # ax[0].plot(date, price, alpha=0, label = f"{check}")
-    # ax[0].plot(date, price, alpha=0, label = f"Difference: {diff}")
     ax[1].plot(date, price, color ="blue", label = f"Running(Rolling) EMA")
     ax[1].plot(date_s_r, price_s_r, color = "green", label = f"A signal for a positive trend")
     ax[1].plot(date_b_r, price_b_r, color = "red", label = f"A signal for a negative trend")
-    # ax[1].plot(date, price, alpha=0, label = f"{check_1}")
-    # ax[1].plot(date, price, alpha=0, label = f"Difference: {diff_1}")
     ax[0].grid(True)
     ax[1].grid(True)
     ax[0].legend()
     ax[1].legend()
     plt.show()
-    print(check, diff, check_1, diff_1)
     if period_1 < 10 or period_2 < 10:
         return (f"Be careful, the forecast is short-term momentum. \n!Check the trend on medium timeframes!", check, diff, check_1, diff_1)
     elif period_1 < 26 or period_2 < 26:
@@ -244,7 +241,6 @@ def rsi(coin, days):
     lesion = []
     profit = []
     i1 = price.iloc[0]
-    print(i1)
     if len(price) < 2:
         return ("Not enough data!", 0)
     else:
@@ -257,7 +253,6 @@ def rsi(coin, days):
                 profit.append(diff)
                 lesion.append(0)
             i1 = i
-        print(lesion, profit)
         if (len(profit) != 0 and len(lesion) != 0) and (len(profit) == days and len(lesion) == days):
             rs = np.mean(profit)/np.mean(np.abs(lesion))    
             rsi_ = 100-(100/(1+rs))
@@ -274,24 +269,25 @@ def rsi(coin, days):
 def checking(coin, days, period_1, period_2):
     _, _, smab, _ = checking_trend(coin, period_1, period_2)
     data = getter(coin, days)
-    if data['close'][0] > smab:
-        print("The trend, most of all, will go up (following a smaller SMA).")
-        return 1
+    last_price = list(data['close'])
+    if last_price[0] > smab:
+        # print("The trend, most of all, will go up (following a smaller SMA).")
+        return (1, 'The trend, most of all, will go up (following a smaller SMA).')
     else:
-        print("The trend, most of all, will go down (by a larger SMA).")
-        return 0
+        
+        return (0, 'The trend, most of all, will go down (by a larger SMA).')
 
 def rsi_sma(coin, days, period_1, period_2):
     _, rsi_in = rsi(coin, days)
-    check = checking(coin, days, period_1, period_2)
-    print(rsi_in, check)
+    check, response = checking(coin, days, period_1, period_2)
+    # print(rsi_in, check)
     if rsi_in <= 40 and check == 1:
-        return("Potential to buy from a pullback.")
+        return(f"Potential to buy from a pullback.\n{response}")
     elif rsi_in >= 60 and check == 0:
-        return("Sales potential.")
+        return(f"Sales potential.\n{response}")
     else:
-        return("For the time being, wait patiently.")
-# resp = rsi('BTC-USDT', 300)
+        return(f"For the time being, wait patiently.\n{response}")
+# resp = rsi_sma('BTC-USDT', 300, 2, 4)
 # print(resp)
 
 def ichimoku_line(minimum, maximum, date, period):
@@ -326,11 +322,10 @@ def ichimoku_cloud(coin, days):
     else:
         senkou_span_b, date_in_b = [], []
 
-    chikou_span = price.iloc[:-26]
-    date_chikou = date.iloc[26:len(date)]
-    min_span = senkou_span_a[0]
-    max_span = senkou_span_b[0]
-    print(min_span, max_span)
+    chikou_span = price.iloc[26:]
+    date_chikou = date.iloc[:len(date)-26]
+    min_span = senkou_span_b[0]
+    max_span = senkou_span_a[0]
     fig, ax = plt.subplots(2, 1, figsize=(9, 5))
     ax[0].plot(date, price, color = "blue", label = "The price of the coin")
     ax[0].plot(date_in, tenkan, color = "green", label = "Tekan-sen")
@@ -398,20 +393,20 @@ def trend_walk_classic_ema(coin, period_1, period_2, days):
 def check_ema(coin, period, days):
     data = getter(coin, days)
     ema_ = classic_ema(data['close'], period, days)
-    if data['close'][0] > ema_[0]:
+    if data['close'].iloc[0] > ema_[0]:
         return("A bullish trend dominates now.")
-    elif data['close'][0] == ema_[0]:
+    elif data['close'].iloc[0] == ema_[0]:
         return("The trend is uncertain, the price is on par with the EMA!")
     else:
         return("A bearish trend dominates now.")
 # trend_walk_classic_ema("BTC-USDT", 10, 20, 100)
-# check_ema("BTC-USDT", 20, 100)
+# resp = check_ema("BTC-USDT", 20, 100)
+# print(resp)
 def macd(coin, days):
     if days >= 35:
         data = getter(coin, days)
         price = data['close']
         date = data['datetime']
-        print(date)
         ema_12 = classic_ema(price, 12, days)
         ema_26 = classic_ema(price, 26, days)
         macd_line = []
@@ -535,7 +530,6 @@ def stochastic_oscillator(coin, period, days):
     text+=str(d_percent[0])
     return text
 # resp = stochastic_oscillator("BTC-USDT", 3, 50)
-import numpy as np
 
 def test_Dickey_Fuller(price):
     x_t = price[:len(price)-1]
@@ -555,7 +549,6 @@ def test_Dickey_Fuller(price):
         se_zn+= i**2
     se = np.sqrt(dispersion/se_zn)
     t_statistic = alpha/se
-    levels = [-3.75, -2.99, -2.64]
     if t_statistic < -3.75:
         return f"Stac! Very high!{t_statistic}", 0
     elif t_statistic < -2.99 and t_statistic > -3.75:
@@ -564,7 +557,7 @@ def test_Dickey_Fuller(price):
         return f"Stac! Medium!{t_statistic}", 0
     elif t_statistic < 0 and t_statistic > -2.64:
         return f"Stac! Low!{t_statistic}", 0
-    else:
+    elif t_statistic > 0:
         return f"Not stac! {t_statistic}", 1
 
 def test_engel_granger(price, price_1):
@@ -576,7 +569,7 @@ def test_engel_granger(price, price_1):
     covariation = covariation_chis/len(price)-1
     disp_sum = 0
     for i in price:
-        disp_sum = (i-x_av)**2
+        disp_sum += (i-x_av)**2
     dispersion = disp_sum/len(price)-1
     b1 = covariation/dispersion
     b0 = y_av-b1*x_av
@@ -588,6 +581,7 @@ def test_engel_granger(price, price_1):
 def cointegration(coin_1, coin_2, days): 
     data, data_1 = getter(coin_1, days), getter(coin_2, days)
     _, resp = test_Dickey_Fuller(data['close'])
+    # print("1", resp)
     _, resp_1 = test_Dickey_Fuller(data_1['close'])
     if resp == 1 and resp_1 == 1:
         e = test_engel_granger(data['close'], data_1['close'])
@@ -598,15 +592,12 @@ def cointegration(coin_1, coin_2, days):
             return "Rows not cointegrated!"
     else:
         return "Rows not stacionared and not cointegrated"
-# resp = cointegration("BTC-USDT", "DOGE-USDT", 1500)
+# resp = cointegration("BTC-USDT", "DOGE-USDT", 100)
 # print(resp)
 def zig_zag(coin, days, depth, dev):
     data = getter(coin, days)
     price = list(data['close'])
     date = list(data['datetime'])
-    date_array = [data['datetime'][0]]
-    date_array_1 = [data['datetime'][0]]
-    price = np.flip(price)
     count_d = 0
     check = []
     array_1 = [price[0]]
@@ -645,10 +636,10 @@ def zig_zag(coin, days, depth, dev):
 # print(arr)
 
 def fibonacci_levels(coin, days, depth, div):
-    price, date_or, extremum, date = zig_zag(coin, days, depth, div)
+    price, date_or, extremum, date= zig_zag(coin, days, depth, div)
     maximum = max(extremum)
     minimum = min(extremum)
-    levels = [0.236, 0.382, 0.5, 0.618, 0.786]
+    levels = [0.0, 0.236, 0.382, 0.5, 0.618, 0.707, 0.786, 0.886, 1.0, 1.272, 1.618]
     up = []
     down = []
     length = len(extremum)/len(levels)
@@ -659,38 +650,40 @@ def fibonacci_levels(coin, days, depth, div):
         up.append(maximum-(maximum - minimum)*i)
         down.append(minimum+(maximum - minimum)*i)
         date_.append(j)
-    levels_date = [date[0]]
-    levels_date.append(date[-1])
-    some_l = [levels[0]]
-    some_l.append(levels[0])
-
+    levels__ = [(i+j)/2 for i, j in zip(up, np.flip(down))][::2]
+    levels = levels[::2]
     plt.plot(date_or, price, color = "blue", label = "Price")
     plt.plot(date_, up, color = "green", marker = 'o', label = "Up")
     plt.plot(date_, down, color = "red", marker = "o", label = "Down")
+    for i, level in enumerate(levels__):
+        if i == 0:
+            plt.axhline(y=level, color="gray", linestyle="--", alpha=0.5, label="Fibonacci levels")
+        else:
+            plt.axhline(y=level, color="gray", linestyle="--", alpha=0.5)
+        plt.text(
+        x=max(date_), y=level, s=f"{level:.2f}", 
+        ha="left", va="center", color="black", fontsize=10
+        )
     plt.plot(date, extremum, color = "purple", label = "ZigZag extremums")
+    plt.legend()
     plt.grid(True)
     plt.show()
-    return extremum
-def detect_trend(extremums):
-    ups = 0
-    downs = 0
-    for i in range(1, len(extremums)):
-        if extremums[i] > extremums[i-1]:
-            ups += 1
-        elif extremums[i] < extremums[i-1]:
-            downs += 1
-    if ups > downs:
-        return "Now dominates uptrend."
-    elif downs > ups:
-        return "Now dominates downtrend."
-    else:
-        return "Now dominates flat trend."
+    return extremum, price
 
+def detect_trend(extremums, price):
+    if len(extremums) < 2:
+        return "Not enough data"
+    if price[0] > extremums[1]:
+        return "Strong uptrend"
+    elif price[0] > extremums[1]:
+        return "Strong downtrend"
+    else:
+        return "Sideways or weak trend"
 
 def elliot_waves(coin, days, depth, div):
-    ext = fibonacci_levels(coin, days, depth, div)
-    response = detect_trend(ext)
+    ext, levels = fibonacci_levels(coin, days, depth, div)
+    response = detect_trend(ext, levels)
     return response
 
-# resp = elliot_waves("BTC-USDT", 50, 3, 5)
+# resp = elliot_waves("BTC-USDT", 200, 3, 1)
 # print(resp)

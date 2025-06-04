@@ -1,10 +1,8 @@
 from PyQt6.QtWidgets import QLabel, QApplication, QButtonGroup, QPushButton, QMainWindow, QRadioButton,\
 QButtonGroup, QTextEdit, QCheckBox, QComboBox
 import sys
-import os
 import coins
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtGui import QFont
 import finance_control
 
 class myWindow(QMainWindow):
@@ -79,7 +77,6 @@ class myWindow(QMainWindow):
 
         self.sma_days_all = QTextEdit(self)
         self.sma_days_all.setVisible(False)
-        # self.sma_days_all.setEnabled(False)
         self.sma_days_all.move(int(self.screen_width/0.45), int(self.screen_height/0.59))
         self.sma_days_all.setStyleSheet("color: #FFFFFF; font-family: 'Tahoma';\
         border: none; font-size: 15px")
@@ -170,7 +167,6 @@ class myWindow(QMainWindow):
         self.check_pair.resize(130, 30)
         self.check_pair.toggled.connect(self.check_box_pair)
         self.rsi_button.clicked.connect(self.rsi_trend)
-        # self.sma_days_all_checkbox.toggled.connect(self.check_trend)
 
         # ----------------------------------------------------------
 
@@ -249,7 +245,6 @@ class myWindow(QMainWindow):
         
         self.cointegration_coin = QComboBox(self)
         self.cointegration_coin.setVisible(False)
-        # self.cointegration_coin.setPlaceholderText("TRX-USDT")
         self.cointegration_coin.addItems(coin)
         self.cointegration_coin.setToolTip("Select second coin for checking cointegration")
         self.cointegration_coin.move(int(self.screen_width/0.45), int(self.screen_height/0.9))
@@ -291,7 +286,7 @@ class myWindow(QMainWindow):
         self.ell_depth_value.move(int(self.screen_width/0.6), int(self.screen_height/0.45))
 
         self.ell_diviation_lab = QLabel("Diviation: ", self)
-        # self.ell_diviation_lab.setPlaceholderText("5")
+
         self.ell_diviation_lab.setStyleSheet("color: #FFFFFF; font-family: 'Tahoma'; \
         font-size: 15px")
         self.ell_diviation_lab.move(int(self.screen_width/0.5), int(self.screen_height/0.45))
@@ -304,10 +299,6 @@ class myWindow(QMainWindow):
         self.ell_diviation.move(int(self.screen_width/0.41), int(self.screen_height/0.45))
         self.ell_diviation.setToolTip("Diviation in percents(for example, 5 percents)")
         self.ell_diviation.setVisible(False)
-        # self.ell_div
-        # self.sma_days_lab.setStyleSheet("color: #FFFFFF; font-family: 'Tahoma'; \
-        # font-size: 15px")
-
 
         self.elliot_waves_.toggled.connect(self.elliot_check)
 
@@ -321,7 +312,6 @@ class myWindow(QMainWindow):
         QPushButton:pressed{background-color: #9B9B9B}")
         self.elliot_button.clicked.connect(self.elliot_trend)
 
-
         # ------------------------------------------------------------
         self.radio_group = QButtonGroup(self)
         self.radio_group.addButton(self.sma_)
@@ -333,7 +323,8 @@ class myWindow(QMainWindow):
         self.radio_group.addButton(self.stoch_osc_)
         self.radio_group.addButton(self.cointegration_)
         self.radio_group.addButton(self.elliot_waves_)
-        # ----------------------------------------------
+        # ------------------------------------------------------------
+
         self.terminal = QLabel(self)
         self.terminal.resize(int(self.screen_width/0.4), int(self.screen_height/0.45))
         self.terminal.setStyleSheet("border: none; background-color: #D9D9D9; border: solid 1px #D9D9D9;\
@@ -347,12 +338,15 @@ class myWindow(QMainWindow):
         self.text_terminal.setStyleSheet("color: #000000; font-size: 13px; background-color: rgba(0, 0, 0, 0);")
 
     def elliot_trend(self):
-        coin = self.sma_coin.currentText()
-        days = self.sma_days_s.toPlainText()
-        depth = abs(int(self.ell_depth_value.toPlainText()))
-        diviation = abs(int(self.ell_diviation.toPlainText()))
-        response = finance_control.elliot_waves(coin, abs(int(days)), depth, diviation)
-        self.text_terminal.setText(response)
+        try:
+            coin = self.sma_coin.currentText()
+            days = self.sma_days_s.toPlainText()
+            depth = abs(int(self.ell_depth_value.toPlainText()))
+            diviation = abs(int(self.ell_diviation.toPlainText()))
+            response = finance_control.elliot_waves(coin, days, depth, diviation)
+            self.text_terminal.setText(response)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
 
     def elliot_check(self):
         if self.elliot_waves_.isChecked():
@@ -375,19 +369,24 @@ class myWindow(QMainWindow):
             self.sma_days_s.setVisible(False)
             self.sma_days_s.setPlaceholderText("20")
             self.sma_days_s.setToolTip("Min period")
+            self.sma_days_s.clear()
+            self.ell_depth_value.clear()
             self.ell_depth.setVisible(False)
             self.ell_depth_value.setVisible(False)
             self.ell_diviation_lab.setVisible(False)
             self.ell_diviation.setVisible(False)
+            self.ell_diviation.clear()
             self.elliot_button.setVisible(False)
 
     def co_trend(self):
-        coin = self.sma_coin.currentText()
-        coin_2 = self.cointegration_coin.currentText()
-        days = self.sma_days_s.toPlainText()
-        # p = self.p_value.toPlainText()
-        response = finance_control.cointegration(coin, coin_2, abs(int(days)))
-        self.text_terminal.setText(response)
+        try:
+            coin = self.sma_coin.currentText()
+            coin_2 = self.cointegration_coin.currentText()
+            days = self.sma_days_s.toPlainText()
+            response = finance_control.cointegration(coin, coin_2, abs(int(days)))
+            self.text_terminal.setText(response)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
 
     def checking_coo(self):
         if self.cointegration_.isChecked():
@@ -403,6 +402,7 @@ class myWindow(QMainWindow):
             self.sma_coin_lab.setVisible(False)
             self.sma_coin.setVisible(False)
             self.sma_days_lab.setVisible(False)
+            self.sma_days_s.clear()
             self.sma_days_s.setToolTip("Min period")
             self.sma_days_s.setPlaceholderText("20")
             self.sma_days_s.setVisible(False)
@@ -416,6 +416,8 @@ class myWindow(QMainWindow):
             self.sma_days_lab.setVisible(True)
             self.sma_coin.setVisible(True)
             self.sma_days_s.setVisible(True)
+            self.sma_days_s.clear()
+            self.sma_days_b.clear()
             self.sma_days_s.setToolTip("Min period")
             self.sma_days_b.setToolTip("Medium period")
             self.sma_days_b.setVisible(True)
@@ -425,32 +427,40 @@ class myWindow(QMainWindow):
             self.sma_coin_lab.setVisible(False)
             self.sma_days_lab.setVisible(False)
             self.sma_coin.setVisible(False)
+            self.sma_days_s.clear()
+            self.sma_days_b.clear()
             self.sma_days_s.setVisible(False)
             self.sma_days_b.setVisible(False)
             self.sma_button.setVisible(False)
             self.sma_days_all_checkbox.setVisible(False)
             self.sma_days_all_checkbox.setChecked(False)
             self.sma_days_all.setVisible(False)
+            self.sma_days_all.clear()
             self.text_terminal.setText("Terminal")
+
     def check_trend(self):
         if self.sma_days_all_checkbox.isChecked():
             self.sma_days_all.setVisible(True)
             self.sma_days_all.move(int(self.screen_width/0.45), int(self.screen_height/0.59))
         else:
             self.sma_days_all.setVisible(False)
+
     def sma_trend(self):
-        coin = self.sma_coin.currentText()
-        period_s = self.sma_days_s.toPlainText()
-        period_b = self.sma_days_b.toPlainText()
-        if self.sma_days_all_checkbox.isChecked():
-            days = self.sma_days_all.toPlainText()
-            check = finance_control.trends_walk_sma(coin, abs(int(days)), abs(int(period_s)), abs(int(period_b)))
-            self.text_terminal.setText(check)
-        else:
-            string, _, _, diff = finance_control.checking_trend(coin, abs(int(period_s)), abs(int(period_b)))
-            text = f"Result: {string}\nDifference: {diff}."
-            self.text_terminal.setText(text)
-            print(text)
+        try:
+            coin = self.sma_coin.currentText()
+            period_s = self.sma_days_s.toPlainText()
+            period_b = self.sma_days_b.toPlainText()
+            if self.sma_days_all_checkbox.isChecked():
+                days = self.sma_days_all.toPlainText()
+                check = finance_control.trends_walk_sma(coin, abs(int(days)), abs(int(period_s)), abs(int(period_b)))
+                self.text_terminal.setText(check)
+            else:
+                string, _, _, diff = finance_control.checking_trend(coin, abs(int(period_s)), abs(int(period_b)))
+                text = f"Result: {string}\nDifference: {diff}."
+                self.text_terminal.setText(text)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
+
     def checking_rolling_ema(self):
         if self.rolling_ema_.isChecked():
             self.sma_coin_lab.setVisible(True)
@@ -464,21 +474,28 @@ class myWindow(QMainWindow):
         else:
             self.sma_coin_lab.setVisible(False)
             self.sma_days_lab.setVisible(False)
+            self.sma_days_s.clear()
+            self.sma_days_b.clear()
+            self.sma_days_all.clear()
             self.sma_coin.setVisible(False)
             self.sma_days_s.setVisible(False)
             self.sma_days_b.setVisible(False)
             self.rolling_ema_button.setVisible(False)
             self.sma_days_all.setVisible(False)
             self.text_terminal.setText("Terminal")
+
     def rolling_ema_trend(self):
-        coin = self.sma_coin.currentText()
-        period_1 = self.sma_days_s.toPlainText()
-        period_2 = self.sma_days_b.toPlainText()
-        days = self.sma_days_all.toPlainText()
-        trend_walks, check, diff, check_1, diff_1 = finance_control.trend_walk_rolling_ema(coin, abs(int(days)), abs(int(period_1)), abs(int(period_2)))
-        text = f"Trend: {trend_walks}\nResult: {check}\nDifference: {diff}"
-        text += f"\nTrend: {trend_walks}\nResult: {check_1}\nDifference: {diff_1}"
-        self.text_terminal.setText(text)
+        try:
+            coin = self.sma_coin.currentText()
+            period_1 = self.sma_days_s.toPlainText()
+            period_2 = self.sma_days_b.toPlainText()
+            days = self.sma_days_all.toPlainText()
+            trend_walks, check, diff, check_1, diff_1 = finance_control.trend_walk_rolling_ema(coin, abs(int(days)), abs(int(period_1)), abs(int(period_2)))
+            text = f"Trend: {trend_walks}\nResult: {check}\nDifference: {diff}"
+            text += f"\nTrend: {trend_walks}\nResult: {check_1}\nDifference: {diff_1}"
+            self.text_terminal.setText(text)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
         
     def checking_classic_ema(self):
         if self.ema_.isChecked():
@@ -488,7 +505,7 @@ class myWindow(QMainWindow):
             self.sma_days_s.setVisible(True)
             self.ema_button.setVisible(True)
             self.sma_days_all.setEnabled(True)
-            self.sma_days_all.move(int(self.screen_width/0.6), int(self.screen_height/0.59))
+            self.sma_days_all.move(int(self.screen_width/0.52), int(self.screen_height/0.59))
             self.ema_trend.setVisible(True)
             self.sma_days_all.setVisible(True)
         else:
@@ -497,31 +514,40 @@ class myWindow(QMainWindow):
             self.sma_coin.setVisible(False)
             self.sma_days_s.setVisible(False)
             self.sma_days_b.setVisible(False)
+            self.sma_days_s.clear()
+            self.sma_days_b.clear()
             self.sma_days_all.move(int(self.screen_width/0.45), int(self.screen_height/0.59))
+            self.sma_days_all.clear()
             self.ema_button.setVisible(False)
             self.ema_trend.setVisible(False)
             self.ema_trend.setChecked(False)
             self.sma_days_all.setVisible(False)
             self.text_terminal.setText("Terminal")
+
     def check_box_ema(self):
         if self.ema_trend.isChecked():
             self.sma_days_b.setVisible(True)
-            self.sma_days_all.move(int(self.screen_width/0.5), int(self.screen_height/0.59))
-            self.sma_days_b.move(int(self.screen_width/0.6), int(self.screen_height/0.59))
+            self.sma_days_all.move(int(self.screen_width/0.45), int(self.screen_height/0.59))
+            self.sma_days_b.move(int(self.screen_width/0.52), int(self.screen_height/0.59))
         else:
             self.sma_days_b.setVisible(False)
             self.sma_days_all.setVisible(True)
-            self.sma_days_all.move(int(self.screen_width/0.6), int(self.screen_height/0.59))
+            self.sma_days_all.move(int(self.screen_width/0.52), int(self.screen_height/0.59))
+
     def classic_ema_trend(self):
-        coin = self.sma_coin.currentText()
-        period_1 = self.sma_days_s.toPlainText()
-        period_2 = self.sma_days_b.toPlainText()
-        days = self.sma_days_all.toPlainText()
-        if self.ema_trend.isChecked():
-            finance_control.trend_walk_classic_ema(coin, abs(int(period_1)), abs(int(period_2)), abs(int(days)))
-        else:
-            response = finance_control.check_ema(coin, abs(int(period_1)), abs(int(days)))
-            self.text_terminal.setText(response)
+        try:
+            coin = self.sma_coin.currentText()
+            period_1 = self.sma_days_s.toPlainText()
+            period_2 = self.sma_days_b.toPlainText()
+            days = self.sma_days_all.toPlainText()
+            if self.ema_trend.isChecked():
+                finance_control.trend_walk_classic_ema(coin, abs(int(period_1)), abs(int(period_2)), abs(int(days)))
+            else:
+                response = finance_control.check_ema(coin, abs(int(period_1)), abs(int(days)))
+                self.text_terminal.setText(response)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
+
     def check_box_pair(self):
         if self.check_pair.isChecked():
             self.sma_days_s.setVisible(True)
@@ -530,7 +556,11 @@ class myWindow(QMainWindow):
         else: 
             self.sma_days_s.setVisible(False)
             self.sma_days_b.setVisible(False)
+            self.sma_days_s.clear()
+            self.sma_days_b.clear()
+            self.sma_days_all.clear()
             self.sma_days_all.move(int(self.screen_width/0.6), int(self.screen_height/0.59))
+
     def checking_rsi(self):
         if self.rsi_.isChecked():
             self.sma_coin_lab.setVisible(True)
@@ -548,6 +578,9 @@ class myWindow(QMainWindow):
             self.sma_coin.setVisible(False)
             self.sma_days_s.setVisible(False)
             self.sma_days_b.setVisible(False)
+            self.sma_days_s.clear()
+            self.sma_days_b.clear()
+            self.sma_days_all.clear()
             self.sma_days_all.move(int(self.screen_width/0.45), int(self.screen_height/0.59))
             self.sma_days_all.setVisible(False)
             self.check_pair.setVisible(False)
@@ -556,16 +589,20 @@ class myWindow(QMainWindow):
             self.text_terminal.setText("Terminal")
 
     def rsi_trend(self):
-        coin = self.sma_coin.currentText()
-        days = self.sma_days_all.toPlainText()
-        period_1 = self.sma_days_s.toPlainText()
-        period_2 = self.sma_days_b.toPlainText()
-        if self.check_pair.isChecked():
-            response = finance_control.rsi_sma(coin, abs(int(days)), abs(int(period_1)), abs(int(period_2)))
-            self.text_terminal.setText(response)
-        else:
-            response, _ = finance_control.rsi(coin, abs(int(days)))
-            self.text_terminal.setText(response)
+        try:
+            coin = self.sma_coin.currentText()
+            days = self.sma_days_all.toPlainText()
+            period_1 = self.sma_days_s.toPlainText()
+            period_2 = self.sma_days_b.toPlainText()
+            if self.check_pair.isChecked():
+                response = finance_control.rsi_sma(coin, abs(int(days)), abs(int(period_1)), abs(int(period_2)))
+                self.text_terminal.setText(response)
+            else:
+                response, _ = finance_control.rsi(coin, abs(int(days)))
+                self.text_terminal.setText(response)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
+
     def checking_ichimoku(self):
         if self.ichimoku_cloud_.isChecked():
             self.sma_coin_lab.setVisible(True)
@@ -581,21 +618,29 @@ class myWindow(QMainWindow):
             self.sma_coin.setVisible(False)
             self.sma_days_lab.setVisible(False)
             self.sma_days_s.setVisible(False)
+            self.sma_days_s.clear()
             self.sma_days_s.setToolTip("Min period")
             self.sma_days_s.setPlaceholderText("20")
             self.ichimoku_cloud_button.setVisible(False)
             self.text_terminal.setText("Terminal")
+
     def ichimoku_trend(self):
-        coin = self.sma_coin.currentText()
-        days = self.sma_days_s.toPlainText()
-        response = finance_control.ichimoku_cloud(coin, abs(int(days)))
-        self.text_terminal.setText(response)
+        try:
+            coin = self.sma_coin.currentText()
+            days = self.sma_days_s.toPlainText()
+            response = finance_control.ichimoku_cloud(coin, abs(int(days)))
+            self.text_terminal.setText(response)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
     
     def macd_trend(self):
-        coin = self.sma_coin.currentText()
-        days = self.sma_days_s.toPlainText()
-        response  = finance_control.macd(coin, abs(int(days)))
-        self.text_terminal.setText(response)
+        try:
+            coin = self.sma_coin.currentText()
+            days = self.sma_days_s.toPlainText()
+            response  = finance_control.macd(coin, abs(int(days)))
+            self.text_terminal.setText(response)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
 
     def checking_macd(self):
         if self.macd_.isChecked():
@@ -613,15 +658,19 @@ class myWindow(QMainWindow):
             self.sma_days_s.setVisible(False)
             self.sma_days_s.setPlaceholderText("20")
             self.sma_days_s.setToolTip("Min period")
+            self.sma_days_s.clear()
             self.text_terminal.setText("Terminal")
             self.macd_button.setVisible(False)
 
     def stoch_trend(self):
-        coin = self.sma_coin.currentText()
-        period = self.sma_days_s.toPlainText()
-        days = self.sma_days_b.toPlainText()
-        response = finance_control.stochastic_oscillator(coin, abs(int(period)), abs(int(days)))
-        self.text_terminal.setText(response)
+        try:
+            coin = self.sma_coin.currentText()
+            period = self.sma_days_s.toPlainText()
+            days = self.sma_days_b.toPlainText()
+            response = finance_control.stochastic_oscillator(coin, abs(int(period)), abs(int(days)))
+            self.text_terminal.setText(response)
+        except ValueError as err:
+            self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
 
     def checking_ost(self):
         if self.stoch_osc_.isChecked():
@@ -643,7 +692,8 @@ class myWindow(QMainWindow):
             self.sma_days_b.setVisible(False)
             self.sma_days_b.setPlaceholderText("200")
             self.sma_days_b.setToolTip("Medium period")
-            self.sma_days_s.setText("")
+            self.sma_days_s.clear()
+            self.sma_days_b.clear()
             self.text_terminal.setText("Terminal")
             self.stoch_button.setVisible(False)
 
