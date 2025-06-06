@@ -343,7 +343,7 @@ class myWindow(QMainWindow):
             days = self.sma_days_s.toPlainText()
             depth = abs(int(self.ell_depth_value.toPlainText()))
             diviation = abs(int(self.ell_diviation.toPlainText()))
-            response = finance_control.elliot_waves(coin, days, depth, diviation)
+            response = finance_control.elliot_waves(coin, int(days), int(depth), int(diviation))
             self.text_terminal.setText(response)
         except ValueError as err:
             self.text_terminal.setText(f'Error! Write correct data.\n{str((err)).capitalize()}')
